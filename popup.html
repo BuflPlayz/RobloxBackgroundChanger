@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      width: 280px;
+      background: #1a1a2e;
+      color: #eee;
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: #fff;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    #preview {
+      width: 100%;
+      height: 130px;
+      border-radius: 8px;
+      background: #2a2a44;
+      border: 2px dashed #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    #preview:hover { border-color: #e84d4d; }
+
+    #preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    #preview span {
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+      padding: 8px;
+      line-height: 1.5;
+    }
+
+    #fileInput { display: none; }
+
+    .btn {
+      width: 100%;
+      padding: 9px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      margin-bottom: 8px;
+    }
+
+    .btn:hover { opacity: 0.85; }
+
+    #pickBtn  { background: #e84d4d; color: #fff; }
+    #clearBtn { background: #333; color: #ccc; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+      margin-top: 4px;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: #444;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e84d4d;
+      cursor: pointer;
+    }
+
+    .slider-value {
+      font-size: 12px;
+      color: #ccc;
+      min-width: 38px;
+      text-align: right;
+    }
+
+    #status {
+      font-size: 11px;
+      color: #7ec47e;
+      text-align: center;
+      min-height: 14px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Roblox Background Changer</h1>
+
+  <div id="preview">
+    <span>Click "Choose Image"<br>to set a background</span>
+  </div>
+
+  <input type="file" id="fileInput" accept="image/*" />
+
+  <button class="btn" id="pickBtn">Choose Image</button>
+  <button class="btn" id="clearBtn">Remove Background</button>
+
+  <div class="section-label">Background Blur</div>
+  <div class="slider-row">
+    <input type="range" id="blurSlider" min="0" max="30" step="1" value="0" />
+    <span class="slider-value" id="blurValue">0px</span>
+  </div>
+
+  <div class="section-label">Darkness</div>
+  <div class="slider-row">
+    <input type="range" id="darknessSlider" min="0" max="90" step="5" value="50" />
+    <span class="slider-value" id="darknessValue">50%</span>
+  </div>
+
+  <div class="section-label">Container Padding</div>
+  <div class="slider-row">
+    <input type="range" id="paddingSlider" min="0" max="60" step="1" value="16" />
+    <span class="slider-value" id="paddingValue">16px</span>
+  </div>
+
+  <div class="section-label">Corner Radius</div>
+  <div class="slider-row">
+    <input type="range" id="radiusSlider" min="0" max="50" step="1" value="12" />
+    <span class="slider-value" id="radiusValue">12px</span>
+  </div>
+
+  <div id="status"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

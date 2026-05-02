@@ -39,7 +39,8 @@
 
     #preview:hover { border-color: #e84d4d; }
 
-    #preview img {
+    #preview img,
+    #preview video {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -132,7 +133,7 @@
     <span>Click "Choose Image"<br>to set a background</span>
   </div>
 
-  <input type="file" id="fileInput" accept="image/*" />
+  <input type="file" id="fileInput" accept="image/*,video/mp4,video/webm" />
 
   <button class="btn" id="pickBtn">Choose Image</button>
   <button class="btn" id="clearBtn">Remove Background</button>

@@ -2,6 +2,7 @@ const LOG = (...args) => console.log('[RobloxBgChanger]', ...args);
 
 const STATE = {
   backgroundImage: null,
+  backgroundType: 'image',  // 'image' | 'video'
   blurAmount: 0,
   darknessAmount: 50,
   paddingAmount: 16,
@@ -23,6 +24,9 @@ const CONTAINER_SELECTORS = [
   '[data-testid="home-container"]',
 ];
 
+const VIDEO_EL_ID = 'rbx-bg-video';
+const VIDEO_STYLE_ID = 'rbx-bg-video-style';
+
 function ensureStyleEl(id) {
   let el = document.getElementById(id);
   if (!el) {
@@ -33,10 +37,64 @@ function ensureStyleEl(id) {
   return el;
 }
 
+function removeVideoBackground() {
+  document.getElementById(VIDEO_EL_ID)?.remove();
+  document.getElementById(VIDEO_STYLE_ID)?.remove();
+}
+
+function applyVideoBackground(dataUrl) {
+  // Style for the fixed video element + ensure body/html are transparent so it shows through.
+  const style = ensureStyleEl(VIDEO_STYLE_ID);
+  style.textContent = `
+    html, body, .rbx-body, #content {
+      background: transparent !important;
+    }
+    #${VIDEO_EL_ID} {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      object-fit: cover !important;
+      z-index: -1 !important;
+      pointer-events: none !important;
+      border: none !important;
+    }
+  `;
+
+  let video = document.getElementById(VIDEO_EL_ID);
+  if (!video) {
+    video = document.createElement('video');
+    video.id = VIDEO_EL_ID;
+    video.autoplay = true;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    (document.body || document.documentElement).appendChild(video);
+  }
+  if (video.src !== dataUrl) {
+    video.src = dataUrl;
+    video.play().catch((e) => LOG('Autoplay blocked:', e));
+  }
+}
+
 function renderBackground() {
-  const el = ensureStyleEl('rbx-bg-changer-style');
-  if (STATE.backgroundImage) {
-    el.textContent = `
+  const styleEl = ensureStyleEl('rbx-bg-changer-style');
+
+  if (!STATE.backgroundImage) {
+    styleEl.textContent = '';
+    removeVideoBackground();
+    return;
+  }
+
+  if (STATE.backgroundType === 'video') {
+    styleEl.textContent = '';  // CSS image rule cleared
+    applyVideoBackground(STATE.backgroundImage);
+  } else {
+    removeVideoBackground();
+    styleEl.textContent = `
       html {
         background-image: url("${STATE.backgroundImage}") !important;
         background-size: cover !important;
@@ -48,16 +106,12 @@ function renderBackground() {
         background: transparent !important;
       }
     `;
-  } else {
-    el.textContent = '';
   }
 }
 
 function renderOverlay() {
   const el = ensureStyleEl('rbx-overlay-style');
   const { blurAmount: blur, darknessAmount: dark, paddingAmount: pad, radiusAmount: rad } = STATE;
-
-  // Always emit rules so padding / radius can be applied even with no blur or darkness.
   const bg = dark > 0 ? `rgba(0, 0, 0, ${(dark / 100).toFixed(2)})` : 'transparent';
   const sel = [...CONTAINER_SELECTORS, '.rbx-bg-overlay-target'].join(', ');
 
@@ -74,7 +128,7 @@ function renderOverlay() {
 }
 
 function tagFallbackContainer() {
-  if (document.getElementById('HomeContainer')) return; // real one exists, no fallback needed
+  if (document.getElementById('HomeContainer')) return;
   const candidates = Array.from(document.querySelectorAll('main, #content, [class*="container"], [class*="Container"]'));
   let best = null;
   let bestArea = 0;
@@ -103,7 +157,7 @@ chrome.storage.local.get(Object.keys(STATE), (data) => {
   for (const k of Object.keys(STATE)) {
     if (data[k] !== undefined) STATE[k] = data[k];
   }
-  LOG('Initial state:', STATE);
+  LOG('Initial state:', { ...STATE, backgroundImage: STATE.backgroundImage ? '<dataUrl>' : null });
   applyAll();
 });
 
@@ -116,6 +170,10 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 const observer = new MutationObserver(() => {
+  // Re-attach the video element if Roblox's React tree replaces body children
+  if (STATE.backgroundType === 'video' && STATE.backgroundImage && !document.getElementById(VIDEO_EL_ID)) {
+    applyVideoBackground(STATE.backgroundImage);
+  }
   if (!document.getElementById('HomeContainer') && !document.querySelector('.rbx-bg-overlay-target')) {
     tagFallbackContainer();
   }
